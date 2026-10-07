@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Таймер</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #fff;
+    font-family: Arial, sans-serif;
+  }
+  #startScreen {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+  #startButton {
+    font-size: 28px;
+    padding: 18px 38px;
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #222;
+    color: #fff;
+  }
+  #startButton:active { transform: scale(.97); }
+  #timer {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 120px;
+    font-weight: bold;
+    color: #111;
+    background: #fff;
+  }
+  #scare {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    z-index: 10;
+  }
+  #scare img {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+    display: block;
+  }
+</style>
+</head>
+<body>
+  <div id="startScreen">
+    <button id="startButton">НАЖМИ МЕНЯ</button>
+  </div>
+
+  <div id="timer">5</div>
+
+  <div id="scare">
+    <img src="screamer.png" alt="">
+  </div>
+
+  <audio id="sound" src="scary_hit_louder.mp3" preload="auto" loop></audio>
+
+<script>
+const button = document.getElementById('startButton');
+const startScreen = document.getElementById('startScreen');
+const timer = document.getElementById('timer');
+const scare = document.getElementById('scare');
+const sound = document.getElementById('sound');
+
+button.addEventListener('click', async () => {
+  button.disabled = true;
+  startScreen.style.display = 'none';
+  timer.style.display = 'flex';
+
+  // Запускаем аудио без звука сразу после клика, чтобы браузер не заблокировал его.
+  sound.volume = 0;
+  try { await sound.play(); } catch (e) {}
+
+  let seconds = 5;
+  timer.textContent = seconds;
+  const countdown = setInterval(() => {
+    seconds--;
+    if (seconds > 0) {
+      timer.textContent = seconds;
+    } else {
+      clearInterval(countdown);
+      timer.style.display = 'none';
+      triggerScreamer();
+    }
+  }, 1000);
+});
+
+function triggerScreamer() {
+  // Картинка и звук запускаются одновременно.
+  scare.style.display = 'flex';
+  sound.currentTime = 0;
+  sound.volume = 1.0;
+  sound.play().catch(() => {});
+
+  // Быстрое мигание, после которого картинка остаётся навсегда.
+  let flashes = 0;
+  const maxFlashes = 10;
+  const flashTimer = setInterval(() => {
+    scare.style.visibility = (scare.style.visibility === 'hidden') ? 'visible' : 'hidden';
+    flashes++;
+    if (flashes >= maxFlashes) {
+      clearInterval(flashTimer);
+      scare.style.visibility = 'visible';
+    }
+  }, 120);
+}
+</script>
+</body>
+</html>
